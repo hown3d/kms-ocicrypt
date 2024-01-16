@@ -1,0 +1,25 @@
+# https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: containerd-kms-crypt
+  namespace: default
+  labels:
+    app: containerd-kms-crypt
+spec:
+  selector:
+    matchLabels:
+      app: containerd-kms-crypt
+  template:
+    metadata:
+      labels:
+        app: containerd-kms-crypt
+    spec:
+      containers:
+        - name: containerd-kms-crypt
+          image: debian
+
+          ports:
+            - containerPort: 9666
+              name: grpc
+      hostNetwork: true

@@ -1,0 +1,7 @@
+    {
+        "key-providers": {
+            "kms-crypt": {
+                "grpc": "localhost:9666"
+            }
+        }
+    }

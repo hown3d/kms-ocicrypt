@@ -1,0 +1,8 @@
+VERSION 0.7
+
+proto-gen:
+    FROM bufbuild/buf
+    COPY buf.gen.yaml buf.yaml .
+    RUN buf generate https://github.com/containers/ocicrypt.git --path utils/keyprovider
+    SAVE ARTIFACT gen/go AS LOCAL gen/go
+
