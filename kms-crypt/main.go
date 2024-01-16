@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 
-	"github.com/containers/ocicrypt/blockcipher"
 	"github.com/containers/ocicrypt/keywrap/keyprovider"
 	keyproviderpb "github.com/hown3d/containerd-kms-crypt/gen/go/utils/keyprovider"
 	"github.com/hown3d/containerd-kms-crypt/kms"
@@ -114,12 +113,6 @@ func (s *KeyProviderService) WrapKey(ctx context.Context, input *keyproviderpb.K
 		return nil, status.Error(codes.InvalidArgument, "wrong operation")
 	}
 
-	var cipherOpts blockcipher.PrivateLayerBlockCipherOptions
-	err = json.Unmarshal(protoInput.KeyWrapParams.OptsData, &cipherOpts)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unmarshal cipher options: %v", err)
-	}
-
 	encryptionParams := protoInput.KeyWrapParams.Ec.Parameters
 	if encryptionParams == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing encryption parameters")
@@ -130,9 +123,7 @@ func (s *KeyProviderService) WrapKey(ctx context.Context, input *keyproviderpb.K
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	slog.Info("recieved input", "keyWrapParams.Ec", protoInput.KeyWrapParams.Ec.Parameters, "cipherOpts", cipherOpts)
-
-	cipherText, err := s.kmsProvider.Encrypt(ctx, cipherOpts.SymmetricKey, kmsKey)
+	cipherText, err := s.kmsProvider.Encrypt(ctx, protoInput.KeyWrapParams.OptsData, kmsKey)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
