@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"log/slog"
 	"net"
 	"os"
@@ -20,6 +21,14 @@ import (
 
 var port = 9666
 
+// InterceptorLogger adapts slog logger to interceptor logger.
+// This code is simple enough to be copied and not imported.
+func InterceptorLogger(l *slog.Logger) logging.Logger {
+	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
+		l.Log(ctx, slog.Level(lvl), msg, fields...)
+	})
+}
+
 func main() {
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 	if err != nil {
@@ -27,7 +36,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			logging.UnaryServerInterceptor(InterceptorLogger(slog.Default())),
+			// Add any other interceptor you want.
+		),
+		grpc.ChainStreamInterceptor(
+			logging.StreamServerInterceptor(InterceptorLogger(slog.Default())),
+			// Add any other interceptor you want.
+		),
+	)
 
 	kmsProvider, err := aws.NewKMS()
 	if err != nil {
@@ -67,7 +85,6 @@ func (s *KeyProviderService) UnWrapKey(ctx context.Context, input *keyproviderpb
 		return nil, status.Error(codes.InvalidArgument, "wrong operation")
 	}
 
-	slog.Info("recieved input", "keyUnwrapParams", protoInput.KeyUnwrapParams)
 	decryptionParams := protoInput.KeyUnwrapParams.Dc.Parameters
 	if decryptionParams == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing decryption parameters")

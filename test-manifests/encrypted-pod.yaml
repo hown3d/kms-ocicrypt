@@ -1,0 +1,11 @@
+# https://kubernetes.io/docs/concepts/workloads/pods/
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "encrypted"
+spec:
+  containers:
+    - name: encrypted
+      image: "ttl.sh/imgcrypt-test"
+---
+

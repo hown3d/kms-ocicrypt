@@ -1,0 +1,12 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.21 as imgcrypt-build
+ADD https://github.com/containerd/imgcrypt.git#v1.1.9 /imgcrypt
+WORKDIR /imgcrypt
+ENV CGO_ENABLED=0
+RUN go build -ldflags='-s -w' -o ctd-decoder ./cmd/ctd-decoder
+
+FROM kindest/node:v1.29.0
+# config done here: https://github.com/containerd/containerd/blob/1677a17964311325ed1c31e2c0a3589ce6d5c30d/cmd/containerd/command/config.go#L145-L146
+ADD kms-crypt/test/ocicrypt.json /etc/containerd/ocicrypt/ocicrypt_keyprovider.conf
+COPY --from=imgcrypt-build /imgcrypt/ctd-decoder /bin
+RUN mkdir -p /etc/containerd/ocicrypt/keys

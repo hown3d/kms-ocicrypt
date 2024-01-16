@@ -1,0 +1,6 @@
+builds:
+  - id: kms-crypt
+    dir: .
+    ldflags:
+      - -s -w
+      - -X google.golang.org/protobuf/reflect/protoregistry.conflictPolicy=warn

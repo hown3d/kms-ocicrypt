@@ -17,8 +17,7 @@ spec:
     spec:
       containers:
         - name: containerd-kms-crypt
-          image: debian
-
+          image: ttl.sh/kms-crypt/containerd-kms-crypt:latest
           ports:
             - containerPort: 9666
               name: grpc
