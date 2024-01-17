@@ -1,12 +1,21 @@
-package aws
+package kms
 
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	aws_kms "github.com/aws/aws-sdk-go-v2/service/kms"
 )
+
+func init() {
+	awsKms, err := NewKMS()
+	if err != nil {
+		log.Fatal(err)
+	}
+	register("aws", awsKms)
+}
 
 type KMS struct {
 	client *aws_kms.Client
