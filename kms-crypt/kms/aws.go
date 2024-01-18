@@ -10,19 +10,22 @@ import (
 )
 
 func init() {
-	awsKms, err := NewKMS()
+	awsKms, err := newKMS()
 	if err != nil {
 		log.Fatal(err)
 	}
 	register("aws", awsKms)
 }
 
-type KMS struct {
+type awsKms struct {
 	client *aws_kms.Client
 }
 
+// Interface compliance
+var _ Provider = (*awsKms)(nil)
+
 // Decrypt implements kms.KMS.
-func (k *KMS) Decrypt(ctx context.Context, cipher []byte, keyId string) ([]byte, error) {
+func (k *awsKms) Decrypt(ctx context.Context, cipher []byte, keyId string) ([]byte, error) {
 	req := &aws_kms.DecryptInput{
 		KeyId:          &keyId,
 		CiphertextBlob: cipher,
@@ -35,7 +38,7 @@ func (k *KMS) Decrypt(ctx context.Context, cipher []byte, keyId string) ([]byte,
 }
 
 // Encrypt implements kms.KMS.
-func (k *KMS) Encrypt(ctx context.Context, plain []byte, keyId string) ([]byte, error) {
+func (k *awsKms) Encrypt(ctx context.Context, plain []byte, keyId string) ([]byte, error) {
 	req := &aws_kms.EncryptInput{
 		KeyId:     &keyId,
 		Plaintext: plain,
@@ -47,7 +50,7 @@ func (k *KMS) Encrypt(ctx context.Context, plain []byte, keyId string) ([]byte, 
 	return resp.CiphertextBlob, nil
 }
 
-func NewKMS() (*KMS, error) {
+func newKMS() (*awsKms, error) {
 	// Using the SDK's default configuration, loading additional config
 	// and credentials values from the environment variables, shared
 	// credentials, and shared configuration files
@@ -57,5 +60,5 @@ func NewKMS() (*KMS, error) {
 	}
 
 	client := aws_kms.NewFromConfig(cfg)
-	return &KMS{client: client}, nil
+	return &awsKms{client: client}, nil
 }

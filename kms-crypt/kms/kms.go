@@ -2,8 +2,6 @@ package kms
 
 import (
 	"context"
-
-	"github.com/hown3d/containerd-kms-crypt/kms/aws"
 )
 
 type Provider interface {
@@ -11,5 +9,11 @@ type Provider interface {
 	Decrypt(ctx context.Context, cipher []byte, keyId string) ([]byte, error)
 }
 
-// Interface compliance
-var _ Provider = (*aws.KMS)(nil)
+// Register can be called from init() on a plugin in this package
+// It will automatically be added to the Inputs map to be called externally
+func register(name string, provider Provider) {
+	Providers[name] = provider
+}
+
+// Providers registry
+var Providers = map[string]Provider{}

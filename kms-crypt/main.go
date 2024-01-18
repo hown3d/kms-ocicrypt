@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -33,20 +34,23 @@ func InterceptorLogger(l *slog.Logger) logging.Logger {
 
 func main() {
 	flag.Parse()
+
+	err := createOcicryptKeyproviderConfig()
+	if err != nil {
+		log.Fatalf("error creating ocicrypt keyprovider config: %s", err)
+	}
+
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", *port))
 	if err != nil {
-		slog.Error(fmt.Sprintf("Failed to listen on port %v", *port), "error", err)
-		os.Exit(1)
+		log.Fatalf("Failed to listen on port %v: %v", *port, err)
 	}
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			logging.UnaryServerInterceptor(InterceptorLogger(slog.Default())),
-			// Add any other interceptor you want.
 		),
 		grpc.ChainStreamInterceptor(
 			logging.StreamServerInterceptor(InterceptorLogger(slog.Default())),
-			// Add any other interceptor you want.
 		),
 	)
 
@@ -54,11 +58,47 @@ func main() {
 	if !ok {
 		log.Fatalf("specified kms provider %v is not registered", *kmsProviderName)
 	}
-	keyproviderpb.RegisterKeyProviderServiceServer(grpcServer, service.NewKeyProviderService(kmsProvider))
+	keyproviderpb.RegisterKeyProviderServiceServer(grpcServer, service.NewKeyProviderService(kmsProvider, *keyProviderName))
 
 	slog.Info(fmt.Sprintf("serving grpc server on :%d", *port))
 	if err := grpcServer.Serve(lis); err != nil {
-		slog.Error("Failed to serve grpc server", "error", err)
-		os.Exit(1)
+		log.Fatalf("Failed to serve grpc server: %s", err)
 	}
+}
+
+type OcicryptKeyproviderConfig struct {
+	KeyProviders map[string]struct {
+		GRPC string `json:"grpc"`
+	} `json:"key-providers"`
+}
+
+const keyproviderFilepath = "/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf"
+
+func createOcicryptKeyproviderConfig() error {
+	ip := os.Getenv("POD_IP")
+	cfg := OcicryptKeyproviderConfig{
+		KeyProviders: map[string]struct {
+			GRPC string `json:"grpc"`
+		}{
+			*keyProviderName: {
+				GRPC: fmt.Sprintf("%v:%d", ip, *port),
+			},
+		},
+	}
+	slog.Info("generateOcicryptKeyproviderConfig", "config", cfg)
+	cfgBytes, err := json.MarshalIndent(cfg, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(keyproviderFilepath)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(cfgBytes)
+	if err != nil {
+		return err
+	}
+	return nil
 }

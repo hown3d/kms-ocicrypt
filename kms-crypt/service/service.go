@@ -20,12 +20,14 @@ type annotationPacket struct {
 }
 
 type KeyProviderService struct {
-	kmsProvider kms.Provider
+	kmsProvider     kms.Provider
+	keyProviderName string
 }
 
-func NewKeyProviderService(kmsProvider kms.Provider) *KeyProviderService {
+func NewKeyProviderService(kmsProvider kms.Provider, keyproviderName string) *KeyProviderService {
 	return &KeyProviderService{
-		kmsProvider: kmsProvider,
+		kmsProvider:     kmsProvider,
+		keyProviderName: keyproviderName,
 	}
 }
 
@@ -54,7 +56,7 @@ func (s *KeyProviderService) UnWrapKey(ctx context.Context, input *keyproviderpb
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "unmarshal annotationPacket: %v", err)
 	}
-	kmsKey, err := getKmsKey(decryptionParams)
+	kmsKey, err := s.getKmsKey(decryptionParams)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -94,7 +96,7 @@ func (s *KeyProviderService) WrapKey(ctx context.Context, input *keyproviderpb.K
 		return nil, status.Error(codes.InvalidArgument, "missing encryption parameters")
 	}
 
-	kmsKey, err := getKmsKey(encryptionParams)
+	kmsKey, err := s.getKmsKey(encryptionParams)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -128,9 +130,9 @@ func (s *KeyProviderService) WrapKey(ctx context.Context, input *keyproviderpb.K
 	}, nil
 }
 
-func getKmsKey(params map[string][][]byte) (string, error) {
+func (s *KeyProviderService) getKmsKey(params map[string][][]byte) (string, error) {
 	slog.Info("getKmsKey", "request params", params)
-	keys, ok := params[*keyProviderName]
+	keys, ok := params[s.keyProviderName]
 	if !ok {
 		return "", errors.New("keyprovider is missing in parameters")
 	}
