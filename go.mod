@@ -1,4 +1,4 @@
-module github.com/hown3d/containerd-kms-crypt
+module github.com/hown3d/kms-ocicrypt
 
 go 1.21.3
 

@@ -1,9 +1,7 @@
-# Running containerd with kms cryptography
+# KMS OCICrypt
 
-This repository is designed to run containerd in a kubernetes setup with image decryption capabilities provided by AWS KMS.
-
-## TODOs
-- [ ] implement support for containerd CRI plugin to specify keyprovider opts on pod annotations
+GRPC Server that implements the keyprovider interface of OCICrypt for KMS providers.
 
 ## Sources
-- https://medium.com/@lumjjb/encrypting-container-images-with-containerd-imgcrypt-3c07f8e8e8d4
+- [OCICrypt Keyprovider Docs](https://github.com/containers/ocicrypt/blob/main/docs/keyprovider.md)
+- [OCI Image Spec Encryption Proposal](https://github.com/opencontainers/image-spec/pull/775)

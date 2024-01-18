@@ -7,8 +7,8 @@ import (
 	"log/slog"
 
 	"github.com/containers/ocicrypt/keywrap/keyprovider"
-	keyproviderpb "github.com/hown3d/containerd-kms-crypt/gen/go/utils/keyprovider"
-	"github.com/hown3d/containerd-kms-crypt/kms"
+	keyproviderpb "github.com/hown3d/kms-ocicrypt/gen/go/utils/keyprovider"
+	"github.com/hown3d/kms-ocicrypt/kms"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

@@ -2,7 +2,7 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: github.com/hown3d/containerd-kms-crypt/gen/go
+    default: github.com/hown3d/kms-ocicrypt/gen/go
 plugins:
   # Use protoc-gen-go at v1.31.0
   - plugin: buf.build/protocolbuffers/go:v1.31.0

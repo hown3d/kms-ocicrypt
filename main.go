@@ -12,9 +12,9 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 
-	keyproviderpb "github.com/hown3d/containerd-kms-crypt/gen/go/utils/keyprovider"
-	"github.com/hown3d/containerd-kms-crypt/kms"
-	"github.com/hown3d/containerd-kms-crypt/service"
+	keyproviderpb "github.com/hown3d/kms-ocicrypt/gen/go/utils/keyprovider"
+	"github.com/hown3d/kms-ocicrypt/kms"
+	"github.com/hown3d/kms-ocicrypt/service"
 	"google.golang.org/grpc"
 )
 

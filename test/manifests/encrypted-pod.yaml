@@ -3,6 +3,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: "encrypted"
+  annotations:
+    io.containerd.cri.decryption-keys: provider:kms-crypt:139845b9-fb6f-43e0-a6f3-8134496e4823
 spec:
   containers:
     - name: encrypted
